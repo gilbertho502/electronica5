@@ -1,0 +1,412 @@
+PORTA234			EQU 0x40004070;pines de salida 	
+GPIO_PORTA_AMSEL_R 	EQU 0x40004528
+GPIO_PORTA_PCTL_R 	EQU 0x4000452C
+GPIO_PORTA_DIR_R 	EQU 0x40004400
+GPIO_PORTA_AFSEL_R 	EQU 0x40004420
+GPIO_PORTA_DEN_R 	EQU 0x4000451C
+GPIO_PORTA_LOCK_R 	EQU 0x40004520
+GPIO_PORTA_CR_R 	EQU 0x40004524
+PCTL				EQU 2_11111111	
+	
+PORTC456			EQU 0x400061C0	
+GPIO_PORTC_AMSEL_R 	EQU 0x40006528
+GPIO_PORTC_PCTL_R 	EQU 0x4000652C
+GPIO_PORTC_DIR_R 	EQU 0x40006400
+GPIO_PORTC_AFSEL_R 	EQU 0x40006420
+GPIO_PORTC_DEN_R 	EQU 0x4000651C
+GPIO_PORTC_LOCK_R 	EQU 0x40006520
+GPIO_PORTC_CR_R 	EQU 0x40006524
+	
+SYSCTL_RCGCGPIO_R   EQU 0x400FE608
+CTE50MS 	   	    EQU 100000	;50 mseg
+CTE2				EQU 3333333	; 1 seg	
+CONSTANTE			EQU 100000
+C		   		    EQU 100000
+CTE5				EQU 16666667
+	AREA |.text|, CODE, READONLY, ALIGN=2
+	THUMB
+	EXPORT Start
+Start 
+	BL Inicio
+Inicio		
+;PUERTO 'A'
+	LDR R1, =SYSCTL_RCGCGPIO_R
+	LDR R0, [R1]
+	ORR R0, R0, #0x01
+	STR R0, [R1]
+	NOP
+	NOP
+	;deshabilitar funcion analogica
+	LDR R1, =GPIO_PORTA_AMSEL_R
+	LDR R0, [R1]
+	BIC R0, #0x1C
+	STR R0, [R1]	
+	LDR R1, =GPIO_PORTA_PCTL_R
+	LDR R0, [R1]
+	LDR R2, =PCTL
+	LDR R3, [R2]
+	BIC R0, R0, R3
+	;BIC R0, #0x00F00000
+	STR R0, [R1]
+	LDR R1, =GPIO_PORTA_DIR_R ;PA2345
+	LDR R0, [R1]
+	ORR R0, #0x1C
+	STR R0, [R1]
+	LDR R1, =GPIO_PORTA_AFSEL_R
+	LDR R0, [R1]
+	BIC R0, #0x1C
+	STR R0, [R1]
+	LDR R1, =GPIO_PORTA_DEN_R
+	LDR R0, [R1]
+	ORR R0, #0x1C
+	STR R0, [R1]	
+;---------------------------------------------
+	;PUERTO C	
+	LDR R1, =SYSCTL_RCGCGPIO_R
+	LDR R0, [R1]
+	ORR R0, R0, #0x04
+	STR R0, [R1]
+	NOP
+	NOP
+	;deshabilitar funcion analogica
+	LDR R1, =GPIO_PORTC_PCTL_R
+	LDR R0, [R1]
+	LDR R2, =PCTL
+	LDR R3, [R2]
+	BIC R0, R0, R3
+	;BIC R0, #0x00F00000
+	STR R0, [R1]
+	LDR R1, =GPIO_PORTC_DIR_R ;PC456
+	LDR R0, [R1]
+	BIC R0, #0x70
+	STR R0, [R1]
+	LDR R1, =GPIO_PORTC_AFSEL_R
+	LDR R0, [R1]
+	BIC R0, #0x70
+	STR R0, [R1]
+	LDR R1, =GPIO_PORTC_DEN_R
+	LDR R0, [R1]
+	ORR R0, #0x70
+	STR R0, [R1]
+	LDR R3, = CONSTANTE
+	B Loop1
+	B Loop2
+	B Loop3
+Delay
+	ADD R2, #1
+	NOP
+	NOP
+	NOP
+	NOP
+	CMP R2, R3
+	BNE Delay
+	BX LR
+Contador2
+	SUB R10, #1
+	CMP R10, #0
+	BNE Contador2
+	BX LR	
+Contador5	
+	SUB R10, #1
+	CMP R10, #0
+	BNE Contador5
+	BX LR
+Contador50	
+	SUB R10, #1
+	CMP R10, #0
+	BNE Contador50
+	BX LR
+Led1 
+	LDR R1, =PORTA234;432
+	MOV R0, #0x04
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+apagar1
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50
+	BX LR
+	
+Led2
+	LDR R1, =PORTA234;432
+	MOV R0, #0x08
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+apagar2
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50
+	BX LR
+Led3
+	LDR R1, =PORTA234;432
+	MOV R0, #0x10
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+apagar3
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50
+	BX LR
+	
+SEC1	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x10
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led1off1
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50
+led21	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x08
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led2off1	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50	
+led31	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x04
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led3off1	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50	
+led41	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x08
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led4off1	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50	
+led51	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x10
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led5off1	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE5
+	BL Contador5
+	B Loop1
+
+Loop1	;Ciclo para lectura de los switch.
+	;Leer el valor del switch.	
+	LDR R1, =PORTC456
+	LDR R0, [R1]
+	;Retardo.
+	LDR R2, =0
+	LDR R3, =C
+	BL Delay
+	;Encendido leds
+	CMP R0, #0x40
+	BEQ Led3
+	CMP R0, #0x20
+	BEQ Led2
+	CMP R0, #0x10
+	BEQ Led1
+	CMP R0, #0x20
+	BEQ Led2
+	CMP R0, #0x40
+	BEQ Led3
+	B SEC2	
+
+SEC2
+	LDR R1, =PORTA234;432
+	MOV R0, #0x10
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led1off2	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50
+led22
+	LDR R1, =PORTA234;432
+	MOV R0, #0x10
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led2off2	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50	
+led32	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x04
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led3off2
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50	
+led42	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x04
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led4off2
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50	
+led52	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x08
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led5off2	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE5
+	BL Contador5
+	B Loop2
+
+Loop2	;Ciclo para lectura de los switch.
+	;Leer el valor del switch.	
+	LDR R1, =PORTC456
+	LDR R0, [R1]
+	;Retardo.
+	LDR R2, =0
+	LDR R3, =C
+	BL Delay
+	;Encendido leds
+	CMP R0, #0x40
+	BEQ Led3
+	CMP R0, #0x40
+	BEQ Led3
+	CMP R0, #0x10
+	BEQ Led1
+	CMP R0, #0x10
+	BEQ Led1
+	CMP R0, #0x20
+	BEQ Led2
+	B SEC3	
+	
+	
+SEC3
+	LDR R1, =PORTA234;432
+	MOV R0, #0x08
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led1off3	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50
+led23
+	LDR R1, =PORTA234;432
+	MOV R0, #0x04
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led2off3	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50	
+led33	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x10
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led3off3	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50	
+led43	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x10
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led4off3
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE50MS
+	BL Contador50	
+led53	
+	LDR R1, =PORTA234;432
+	MOV R0, #0x04
+	STR R0, [R1]
+	LDR R10, =CTE2
+	BL Contador2
+led5ff3	
+	LDR R1, =PORTA234
+	MOV R0, #0x00
+	STR R0, [R1]
+	LDR R10, =CTE5
+	BL Contador5
+	B Loop3
+
+Loop3	;Ciclo para lectura de los switch.
+	;Leer el valor del switch.	
+	LDR R1, =PORTC456
+	LDR R0, [R1]
+	;Retardo.
+	LDR R2, =0
+	LDR R3, =C
+	BL Delay
+	;Encendido leds
+	CMP R0, #0x20
+	BEQ Led2
+	CMP R0, #0x10
+	BEQ Led1
+	CMP R0, #0x40
+	BEQ Led3
+	CMP R0, #0x40
+	BEQ Led3
+	CMP R0, #0x10
+	BEQ Led1
+	B SEC1
+
+
+	ALIGN
+	END	
